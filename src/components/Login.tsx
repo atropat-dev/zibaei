@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { TextField, Button, Box, Typography, Grid, Paper } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
@@ -17,10 +18,19 @@ const cacheRtl = createCache({
   stylisPlugins: [rtlPlugin],
 });
 
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: '#fff',
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: (theme.vars ?? theme).palette.text.secondary,
+}));
+
 const Login: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [step, setStep] = useState(1); // Step 1: Enter phone number, Step 2: Enter OTP
 
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+  const handlePhoneSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     console.log('Phone number submitted:', phoneNumber);
 
@@ -41,9 +51,16 @@ const Login: React.FC = () => {
 
       const data = await response.json();
       console.log('OTP response received:', data);
+      setStep(2); // Move to the next step
     } catch (error) {
       console.error('Error during OTP submission:', error);
     }
+  };
+
+  const handleOtpSubmit = (e: React.FormEvent): void => {
+    e.preventDefault();
+    console.log('OTP submitted');
+    // Add logic to verify OTP here
   };
 
   return (
@@ -55,34 +72,65 @@ const Login: React.FC = () => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            minHeight: '100vh',
             bgcolor: 'background.default',
             p: 3,
+            width: '100%',
+            height: '100%',
           }}
         >
-          <Typography variant="h4" gutterBottom>
-            ورود به حساب کاربری
-          </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, width: '100%', maxWidth: 400 }}>
-            <TextField
-              fullWidth
-              label="شماره تماس"
-              variant="outlined"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              sx={{ mb: 2, textAlign: 'right' }}
-              inputProps={{ style: { textAlign: 'right' } }}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              sx={{ mt: 2 }}
-            >
-              ارسال کد تایید
-            </Button>
-          </Box>
+          {step === 1 && (
+            <>
+              <Typography variant="h4" gutterBottom>
+                ورود به حساب کاربری
+              </Typography>
+              <Box component="form" onSubmit={handlePhoneSubmit} sx={{ mt: 2, width: '100%', maxWidth: 400 }}>
+                <TextField
+                  fullWidth
+                  label="شماره تماس"
+                  variant="outlined"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  sx={{ mb: 2, textAlign: 'right' }}
+                  inputProps={{ style: { textAlign: 'right' } }}
+                />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2 }}
+                >
+                  ارسال کد تایید
+                </Button>
+              </Box>
+            </>
+          )}
+
+          {step === 2 && (
+            <>
+              <Typography variant="h4" gutterBottom>
+                کد تایید را وارد کنید
+              </Typography>
+              <Box component="form" onSubmit={handleOtpSubmit} sx={{ mt: 2, width: '100%', maxWidth: 400 }}>
+                <TextField
+                  fullWidth
+                  label="کد تایید"
+                  variant="outlined"
+                  sx={{ mb: 2, textAlign: 'center' }}
+                  inputProps={{ maxLength: 5, style: { textAlign: 'center' } }}
+                />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2 }}
+                >
+                  تایید
+                </Button>
+              </Box>
+            </>
+          )}
         </Box>
       </ThemeProvider>
     </CacheProvider>
